@@ -35,6 +35,8 @@ def perform_return(inventory):
 def get_name():
     return input("Enter your name: ")
 
+from datetime import datetime
+
 def get_kitta_numbers(action, inventory):
     kitta_numbers = []
     while True:
@@ -42,15 +44,16 @@ def get_kitta_numbers(action, inventory):
         if kitta_number.lower() == "done":
             break
         if action == "rent":
-            duration = input("Enter the rental duration: ")
+            duration = input("Enter the rental duration (e.g., 1 month, 2 years): ")
             if update_availability(kitta_number, "Not Available", inventory):
                 kitta_numbers.append((kitta_number, duration))
                 print("Land rented successfully.")
             else:
                 print("Land not found.")
         else:
+            late_duration = input("Enter the late duration (e.g., 3 days, 1 week): ")
             if update_availability(kitta_number, "Available", inventory):
-                kitta_numbers.append(kitta_number)
+                kitta_numbers.append((kitta_number, late_duration))
                 print("Land returned successfully.")
             else:
                 print("Land not found.")
@@ -74,11 +77,10 @@ def create_invoice(name, action, lands, inventory):
             kitta_number, duration = land
             invoice_content += f"Kitta Number: {kitta_number}, Duration: {duration}\n"
         else:
-            kitta_number = land
-            invoice_content += f"Kitta Number: {kitta_number}\n"
+            kitta_number, late_duration = land
+            invoice_content += f"Kitta Number: {kitta_number}, Late Duration: {late_duration}\n"
+
+    print(invoice_content)
 
     with open(invoice_filename, "w") as file:
         file.write(invoice_content)
-
-    print(f"Invoice generated: {invoice_filename}")
-
