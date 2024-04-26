@@ -1,0 +1,16 @@
+Invoice for jake (RENT)
+
+Kitta Number: 103, Duration: 1
+Kitta Number: 104, Duration: 2
+
+Details:
+101, Kathmandu, North, 4, 50000, Not Available
+102, Pokhara, East, 5, 60000, Not Available
+103, Lalitpur, South, 10, 100000, Not Available
+104, Bhaktapur, West, 8, 80000, Not Available
+105, Biratnagar, North, 6, 70000, Not Available
+106, Butwal, East, 7, 90000, Available
+107, Dharan, South, 9, 95000, Not Available
+108, Nepalgunj, West, 3, 45000, Available
+109, Dhangadhi, North, 2, 30000, Available
+110, Birgunj, East, 12, 120000, Not Available
