@@ -1,3 +1,4 @@
+# main.py
 from read import  read_inventory
 import operation
 

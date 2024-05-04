@@ -1,6 +1,27 @@
+# read.py
+def read_inventory(file_path):
+    inventory = []
+    with open(file_path, 'r') as file:
+        for line in file:
+            fields = line.strip().split(", ")
+            land = {
+                "kitta_number": fields[0],
+                "location": fields[1],
+                "direction": fields[2],
+                "size": int(fields[3]),
+                "price": float(fields[4]),
+                "availability": fields[5]
+            }
+            inventory.append(land)
+    return inventory
+
+# write.py
+def save_inventory(file_path, inventory):
+    with open(file_path, 'w') as file:
+        for land in inventory:
+            file.write(", ".join(str(land[key]) for key in land) + "\n")
+
 # operation.py
-from read import read_inventory
-from write import save_inventory
 from datetime import datetime
 
 def get_user_choice():
@@ -15,13 +36,9 @@ def display_inventory(inventory):
     if not inventory:
         print("Inventory is empty.")
     else:
-        print("+-----+------------+----------+----+----------+---------------+")
-        print("| ID  |  Location  |Direction |Size|  Price   |  Availability |")
-        print("+-----+------------+----------+----+----------+---------------+")
+        print("Current Inventory:")
         for land in inventory:
-            print(f"| {land['kitta_number']:2} | {land['location']:10} | {land['direction']:8} | {land['size']:2} | {land['price']:8.1f} | {land['availability']:13} |")
-        print("+-----+------------+----------+----+----------+---------------+")
-
+            print(land)
 
 def perform_rent(inventory):
     rented_lands = get_kitta_numbers("rent", inventory)
@@ -83,15 +100,36 @@ def create_invoice(name, action, lands, inventory):
         for item in inventory:
             if item['kitta_number'] == kitta_number:
                 price = item['price']
-                if action == "return":
-                    total_amount += price * float(duration) * 0.15
-                    invoice_content += f"Kitta Number: {kitta_number}, Late Duration: {duration}, Price: {price}, Total: {price * float(duration) * 0.15}\n"
-                else:
-                    total_amount += price * float(duration)
-                    invoice_content += f"Kitta Number: {kitta_number}, Duration: {duration}, Price: {price}, Total: {price * float(duration)}\n"
+                total_amount += price * float(duration)
+                invoice_content += f"Kitta Number: {kitta_number}, Duration: {duration}, Price: {price}, Total: {price * float(duration)}\n"
 
     invoice_content += f"\nTotal Amount: {total_amount}"
     print(invoice_content)
 
     with open(invoice_filename, "w") as file:
         file.write(invoice_content)
+
+
+# main.py
+
+def main():
+    print("Welcome to TechnoPropertyNepal")
+    inventory = read_inventory("inventory.txt")
+
+    while True:
+        choice = operation.get_user_choice()
+
+        if choice == "1":
+            operation.display_inventory(inventory)
+        elif choice == "2":
+            operation.perform_rent(inventory)
+        elif choice == "3":
+            operation.perform_return(inventory)
+        elif choice == "4":
+            print("Thank you for using TechnoPropertyNepal. Goodbye!")
+            break
+        else:
+            print("Invalid choice. Please try again.")
+
+if __name__ == "__main__":
+    main()
