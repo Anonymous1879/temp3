@@ -1,3 +1,41 @@
+# validations.py
+def validate_menu_selection(selection):
+    try:
+        selection = int(selection)
+        if selection < 1 or selection > 4:
+            return "Invalid menu selection. Please enter a number between 1 and 4."
+        else:
+            return None
+    except ValueError:
+        return "Invalid Input"
+
+def validate_land_id(land_id):
+    try:
+        land_id = int(land_id)
+        if land_id <= 0:
+            return "Input positive numbers"
+        else:
+            return None
+    except ValueError:
+        return "Invalid Input"
+
+def validate_duration(duration):
+    try:
+        duration = int(duration)
+        if duration <= 0:
+            return "Input positive numbers"
+        else:
+            return None
+    except ValueError:
+        return "Invalid Input"
+
+def validate_name(name):
+    if any(char.isdigit() for char in name):
+        return "Invalid Input, Name cannot contain numbers"
+    else:
+        return None
+
+
 # read.py
 def read_inventory(file_path):
     inventory = []
@@ -21,8 +59,12 @@ def save_inventory(file_path, inventory):
         for land in inventory:
             file.write(", ".join(str(land[key]) for key in land) + "\n")
 
+
 # operation.py
+from read import read_inventory
+from write import save_inventory
 from datetime import datetime
+import validations
 
 def get_user_choice():
     print("\nMenu:")
@@ -30,15 +72,25 @@ def get_user_choice():
     print("2. Rent")
     print("3. Return")
     print("4. Exit")
-    return input("Please enter your choice (1-4): ")
+    while True:
+        choice = input("Please enter your choice (1-4): ")
+        error = validations.validate_menu_selection(choice)
+        if error:
+            print(error)
+        else:
+            return choice
 
 def display_inventory(inventory):
     if not inventory:
         print("Inventory is empty.")
     else:
-        print("Current Inventory:")
+        print("+-----+------------+----------+----+----------+---------------+")
+        print("| ID  |  Location  |Direction |Size|  Price   |  Availability |")
+        print("+-----+------------+----------+----+----------+---------------+")
         for land in inventory:
-            print(land)
+            print(f"| {land['kitta_number']:2} | {land['location']:10} | {land['direction']:8} | {land['size']:2} | {land['price']:8.1f} | {land['availability']:13} |")
+        print("+-----+------------+----------+----+----------+---------------+")
+
 
 def perform_rent(inventory):
     rented_lands = get_kitta_numbers("rent", inventory)
@@ -55,7 +107,13 @@ def perform_return(inventory):
         save_inventory("inventory.txt", inventory)
 
 def get_name():
-    return input("Enter your name: ")
+    while True:
+        name = input("Enter your name: ")
+        error = validations.validate_name(name)
+        if error:
+            print(error)
+        else:
+            return name
 
 from datetime import datetime
 
@@ -65,16 +123,26 @@ def get_kitta_numbers(action, inventory):
         kitta_number = input(f"Enter the kitta number of the land to {action} (or 'done' to finish): ")
         if kitta_number.lower() == "done":
             break
+        error = validations.validate_land_id(kitta_number)
+        if error:
+            print(error)
+            continue
         if action == "rent":
             duration = input("Enter the rental duration: ")
-            if update_availability(kitta_number, "Not Available", inventory):
+            error = validations.validate_duration(duration)
+            if error:
+                print(error)
+            elif update_availability(kitta_number, "Not Available", inventory):
                 kitta_numbers.append((kitta_number, duration))
                 print("Land rented successfully.")
             else:
                 print("Land not found.")
         else:
             late_duration = input("Enter the late duration: ")
-            if update_availability(kitta_number, "Available", inventory):
+            error = validations.validate_duration(late_duration)
+            if error:
+                print(error)
+            elif update_availability(kitta_number, "Available", inventory):
                 kitta_numbers.append((kitta_number, late_duration))
                 print("Land returned successfully.")
             else:
@@ -100,8 +168,12 @@ def create_invoice(name, action, lands, inventory):
         for item in inventory:
             if item['kitta_number'] == kitta_number:
                 price = item['price']
-                total_amount += price * float(duration)
-                invoice_content += f"Kitta Number: {kitta_number}, Duration: {duration}, Price: {price}, Total: {price * float(duration)}\n"
+                if action == "return":
+                    total_amount += price * float(duration) * 0.15
+                    invoice_content += f"Kitta Number: {kitta_number}, Late Duration: {duration}, Price: {price}, Total: {price * float(duration) * 0.15}\n"
+                else:
+                    total_amount += price * float(duration)
+                    invoice_content += f"Kitta Number: {kitta_number}, Duration: {duration}, Price: {price}, Total: {price * float(duration)}\n"
 
     invoice_content += f"\nTotal Amount: {total_amount}"
     print(invoice_content)
@@ -111,6 +183,8 @@ def create_invoice(name, action, lands, inventory):
 
 
 # main.py
+from read import  read_inventory
+import operation
 
 def main():
     print("Welcome to TechnoPropertyNepal")

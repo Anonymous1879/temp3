@@ -2,6 +2,7 @@
 from read import read_inventory
 from write import save_inventory
 from datetime import datetime
+import validations
 
 def get_user_choice():
     print("\nMenu:")
@@ -9,7 +10,13 @@ def get_user_choice():
     print("2. Rent")
     print("3. Return")
     print("4. Exit")
-    return input("Please enter your choice (1-4): ")
+    while True:
+        choice = input("Please enter your choice (1-4): ")
+        error = validations.validate_menu_selection(choice)
+        if error:
+            print(error)
+        else:
+            return choice
 
 def display_inventory(inventory):
     if not inventory:
@@ -38,9 +45,13 @@ def perform_return(inventory):
         save_inventory("inventory.txt", inventory)
 
 def get_name():
-    return input("Enter your name: ")
-
-from datetime import datetime
+    while True:
+        name = input("Enter your name: ")
+        error = validations.validate_name(name)
+        if error:
+            print(error)
+        else:
+            return name
 
 def get_kitta_numbers(action, inventory):
     kitta_numbers = []
@@ -48,22 +59,38 @@ def get_kitta_numbers(action, inventory):
         kitta_number = input(f"Enter the kitta number of the land to {action} (or 'done' to finish): ")
         if kitta_number.lower() == "done":
             break
+        error = validations.validate_land_id(kitta_number, action, inventory)
+        if error:
+            print(error)
+            continue  # Prompt for land ID again if it's invalid
+        
         if action == "rent":
-            duration = input("Enter the rental duration: ")
-            if update_availability(kitta_number, "Not Available", inventory):
-                kitta_numbers.append((kitta_number, duration))
-                print("Land rented successfully.")
-            else:
-                print("Land not found.")
+            duration_prompt = "Enter the rental duration: "
         else:
-            late_duration = input("Enter the late duration: ")
-            if update_availability(kitta_number, "Available", inventory):
-                kitta_numbers.append((kitta_number, late_duration))
-                print("Land returned successfully.")
+            duration_prompt = "Enter the late duration: "
+        
+        while True:
+            duration = input(duration_prompt)
+            error = validations.validate_duration(duration,action)
+            if error:
+                print(error)
+                continue  # Prompt for duration again if it's invalid
+            if action == "rent":
+                if update_availability(kitta_number, "Not Available", inventory):
+                    kitta_numbers.append((kitta_number, duration))
+                    print("Land rented successfully.")
+                else:
+                    print("Land not found.")
             else:
-                print("Land not found.")
-
+                if update_availability(kitta_number, "Available", inventory):
+                    kitta_numbers.append((kitta_number, duration))
+                    print("Land returned successfully.")
+                else:
+                    print("Land not found.")
+            break  # Exit loop for duration input
     return kitta_numbers
+
+
 
 def update_availability(kitta_number, availability, inventory):
     for land in inventory:
@@ -95,3 +122,4 @@ def create_invoice(name, action, lands, inventory):
 
     with open(invoice_filename, "w") as file:
         file.write(invoice_content)
+
